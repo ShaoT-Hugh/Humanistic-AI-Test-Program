@@ -1,0 +1,34 @@
+html {
+  height: 100%;
+}
+body {
+  background-color: black;
+
+  margin: 0;
+  padding: 2em;
+  display: flex;
+
+  /* This centers our sketch horizontally. */
+  justify-content: center;
+
+  /* This centers our sketch vertically. */
+  align-items: center;
+}
+
+canvas {
+  display: block;
+}
+
+p {
+  font-size: 12pt;
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 20pt;
+  margin-bottom: 2em;
+  text-align: center;
+  color: white;
+}
+
+#stress {
+  font-size: 18pt;
+  line-height: 3em;
+}
