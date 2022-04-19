@@ -27,8 +27,6 @@ function draw() {
   if(gameManager.isRunning) { // if the game is running
     // always show the player
     gameManager.drawPlayers();
-    // update sprites
-    spriteManager.update();
   } else if(GameLoop > 0) {
     push();
     fill(255);
@@ -37,6 +35,8 @@ function draw() {
     text("GAME OVER", width / 2, height /2);
     pop();
   }
+  // always update sprites
+  spriteManager.update();
 }
 
 // Received Player Inputs
