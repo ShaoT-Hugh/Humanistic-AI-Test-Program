@@ -1,0 +1,34 @@
+[
+  {
+    "level_name": "One on One",
+    "players": [
+      {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 2, "range": 2},
+      {"id": 1, "x": 7, "y": 7, "camp": "blue", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 2, "range": 2}
+    ]
+  },
+  {
+    "level_name": "Seige",
+    "players": [
+      {"id": 0, "x": 1, "y": 1, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 3, "range": 2},
+      {"id": 1, "x": 3, "y": 3, "camp": "yellow", "control": "player", "hp": 60, "dmg": 15, "float": 10, "movement": 2, "range": 2},
+      {"id": 2, "x": 8, "y": 5, "camp": "yellow", "control": "player", "hp": 60, "dmg": 15, "float": 10, "movement": 2, "range": 2},
+      {"id": 3, "x": 5, "y": 8, "camp": "yellow", "control": "player", "hp": 60, "dmg": 15, "float": 10, "movement": 2, "range": 2}
+    ]
+  },
+  {
+    "level_name": "Play 3 off",
+    "players": [
+      {"id": 0, "x": 1, "y": 1, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 2, "range": 3},
+      {"id": 1, "x": 5, "y": 5, "camp": "blue", "control": "player", "hp": 70, "dmg": 15, "float": 10, "movement": 2, "range": 2},
+      {"id": 2, "x": 8, "y": 5, "camp": "yellow", "control": "player", "hp": 70, "dmg": 15, "float": 10, "movement": 2, "range": 2},
+      {"id": 3, "x": 5, "y": 8, "camp": "green", "control": "player", "hp": 70, "dmg": 15, "float": 10, "movement": 2, "range": 2}
+    ]
+  },
+  {
+    "level_name": "One on One (Asymmetric)",
+    "players": [
+      {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 2, "range": 2},
+      {"id": 1, "x": 7, "y": 7, "camp": "green", "control": "player", "hp": 60, "dmg": 15, "float": 10, "movement": 3, "range": 3}
+    ]
+  }
+]
