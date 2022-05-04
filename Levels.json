@@ -9,6 +9,13 @@
   },
   null,
   {
+    "level_name": "One on One",
+    "players": [
+      {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 3},
+      {"id": 1, "x": 7, "y": 7, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 3}
+    ]
+  },
+  {
     "level_name": "Seige",
     "players": [
       {"id": 0, "x": 1, "y": 1, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 3, "range": 2},
@@ -45,10 +52,14 @@
   {
     "level_name": "Melee",
     "players": [
-      {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
-      {"id": 1, "x": 7, "y": 2, "camp": "red", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
-      {"id": 2, "x": 2, "y": 7, "camp": "blue", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
-      {"id": 3, "x": 7, "y": 7, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 2}
+      {"id": 0, "x": 3, "y": 1, "camp": "red", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
+      {"id": 1, "x": 6, "y": 1, "camp": "blue", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 2, "x": 1, "y": 6, "camp": "yellow", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
+      {"id": 3, "x": 1, "y": 3, "camp": "green", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 4, "x": 8, "y": 3, "camp": "red", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 5, "x": 8, "y": 6, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
+      {"id": 6, "x": 6, "y": 8, "camp": "yellow", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 7, "x": 3, "y": 8, "camp": "green", "control": "AI", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 2}
     ]
   }
 ]

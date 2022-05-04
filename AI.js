@@ -62,7 +62,7 @@ class AI {
 
   run() { // execute the behavior tree
     if(this.tree.execute()) {
-      console.log(this.command);
+      // console.log(this.command);
       return this.command; // send out the final command in the end
     } else return {command: "SKIP"}
   }

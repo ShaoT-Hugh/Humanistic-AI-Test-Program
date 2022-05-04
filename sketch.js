@@ -25,6 +25,8 @@ function preload() {
   levelManager = loadJSON("Levels.json");
 
   assetsManager = new Map();
+  // images
+  
   // sound effects
   assetsManager.set("Game_start", loadSound("sounds/start_game.wav"));
   assetsManager.set("Game_end", loadSound("sounds/end_game.wav"));

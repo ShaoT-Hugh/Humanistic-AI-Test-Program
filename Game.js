@@ -220,12 +220,14 @@ class StateManager {
         this.round += 1;
         let next_player = this.playerList[this.turn];
         // check if the next player is controlled by AI
-        if(next_player.controller === 'AI' || next_player.controller === 'Null' || next_player.hp <= 0) {
+        if(next_player.controller === 'AI' || next_player.controller === 'Null') {
+          this.enableButtons(false);
           waitTimer = setTimeout(function() {
             gameManager.nextRound();
             // clearTimeout(waitTimer);
           }, 750);
-        } else this.switchState("AWAIT");
+        } else if(next_player.hp <= 0) this.nextRound();
+        else this.switchState("AWAIT");
       }  
     }
   }

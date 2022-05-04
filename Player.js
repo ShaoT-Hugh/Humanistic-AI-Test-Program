@@ -206,7 +206,7 @@ class Player {
     }
     // draw the player's avatar
     if(this.hp > 0) canvas.fill(this.color);
-    else canvas.fill(80);
+    else canvas.fill(20, 80);
     canvas.ellipse(x, y, PLAYER_SIZE);
     // draw health bar
     // canvas.noFill();
