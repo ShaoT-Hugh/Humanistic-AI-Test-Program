@@ -1,12 +1,12 @@
 // Visual Settings
 // canvas parameters
 const SCREEN_WIDTH = 800, SCREEN_HEIGHT = 800;
-const LARGE_TXET = 40;
+const LARGE_TXET = 40, MID_TEXT = 24;
 // grid parameters
 const GRID_ORIGIN_X = 160, GRID_ORIGIN_Y = 100, GRID_SIZE = 48, GRID_ROW = 10, GRID_COL = 10;
 // button parameters
-const BTN_WIDTH = 140, BTN_HEIGHT = 60, BTN_INTERVAL = 20;
-const LEVEL_BTN_SIZE = 210, LEVEL_BTN_INTERVAL = 50;
+const BTN_WIDTH = 120, BTN_HEIGHT = 54, BTN_INTERVAL = 16;
+const LEVEL_BTN_SIZE = 200, LEVEL_BTN_INTERVAL = 40;
 // camp Colors
 const COLORS = ['#ff3300', '#3366ff', '#ffd11a', '#33cc33'];
 // player parameters
@@ -60,10 +60,18 @@ function draw() {
       gameManager.updateGame();
     } else if(gameManager.screenState === "AWAIT") {
       push();
+      fill(20, 160);
+      rect(GRID_ORIGIN_X, GRID_ORIGIN_Y, GRID_COL * GRID_SIZE, GRID_ROW * GRID_SIZE);
       fill(255);
       textStyle(BOLD);
       textSize(LARGE_TXET);
       text("GAME OVER", width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2);
+      if(gameManager.winner !== '') {
+        textSize(MID_TEXT);
+        text("Winner : " + gameManager.winner, width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2 + LARGE_TXET);
+      }
+      textSize(MID_TEXT);
+      text("Press ESC to return", width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2 + LARGE_TXET * 3);
       pop();
     }
   }

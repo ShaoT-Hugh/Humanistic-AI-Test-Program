@@ -26,14 +26,14 @@ class Player {
     this.range = range;
     this.recovery = recovery;
     this.controller = control;
-    if(control === 'AI') this.ai = new AI(this);
+    if(control === 'AI') this.ai = new AI(this); // create a Tree for AI player
 
     this.movementScope = this.getMovementScope();
   }
 
   // execute the command; return if the command is successfully executed
   act(cmd) { // {command: (command name), target: (target position or player id)}
-    if(this.controller === "AI") cmd = this.ai.stateCheck('1-1'); // if the command is empty, switch to AI mode
+    if(this.controller === "AI") cmd = this.ai.run(); // if the command is empty, switch to AI mode
     let ifReady = false;
     switch(cmd.command) {
       case 'MOVE':
@@ -47,8 +47,8 @@ class Player {
         let enemy = cmd.target;
         let dmg = this.damage + floor(random(this.damage_dice));
         enemy.hp -= dmg;
-        let myPos = this.getAbsPos(gameManager.board), enemyPos = enemy.getAbsPos(gameManager.board);
         // create a damage ball
+        let myPos = this.getAbsPos(gameManager.board), enemyPos = enemy.getAbsPos(gameManager.board);
         spriteManager.createSprite("flying_ball", {
           x: myPos[0], y: myPos[1], tx: enemyPos[0], ty: enemyPos[1], txt: dmg,
           color: red(color(this.color)) + ',' + green(color(this.color)) + ',' + blue(color(this.color))
@@ -129,19 +129,16 @@ class Player {
     }
     return false;
   }
-  checkEnemyInRange(target) { // check if a player is within my attack range
-    let scope = this.getAttackScope();
-    for(let cell of scope) // check all the cells in the scope
-      if(cell[0] == target.x && cell[1] == target.y) // if the player is within the scope
-        return true;
+  checkEnemyInRange(enemy) { // check if an enemy is within my attack range
+    let range = this.getAttackScope();
+    for(let cell of range) {
+      if(cell[0] == enemy.x && cell[1] == enemy.y) return true;
+    }
     return false;
-  }
-  distance(player1, player2) { // calculate the Manhattan distance between 2 players, return [dist_x, dist_y]
-    let x1 = player1.x, y1 = player1.y, x2 = player2.x, y2 = player2.y;
-    return [x1 - x2, y1 - y2];
   }
 
   // Visualization Functions
+
   getAbsPos(grid) { // get player's abusolute position
     let absX = grid.x + grid.cellSize * (this.x + 0.5);
     let absY = grid.y + grid.cellSize * (this.y + 0.5);
@@ -183,8 +180,8 @@ class Player {
     canvas.push();
     canvas.translate(x + PLAYER_SIZE, y);
     canvas.stroke(220);
-    canvas.fill(80, 160);
-    canvas.rect(0, 0, 120, 60);
+    canvas.fill(80, 180);
+    canvas.rect(0, 0, 120, 80);
     // draw the texts
     canvas.noStroke();
     canvas.textAlign(LEFT);
@@ -192,13 +189,14 @@ class Player {
     canvas.textSize(16);
     canvas.text("HP : " + this.hp + ' / ' + this.maxhp, 10, 20);
     canvas.text("ATK : " + this.damage + ' - ' + (this.damage + this.damage_dice), 10, 42);
+    canvas.text("MOV : " + this.movement, 10, 64);
     canvas.pop();
   }
   draw(turn, grid, canvas = window) {
     let x = this.getAbsPos(grid)[0],  y = this.getAbsPos(grid)[1];
     let hp_percent = this.hp / this.maxhp;
-    // draw the player's attack scope
-    if(this.controller === "AI" && hp_percent > 0) this.drawAttackScope(grid);
+    // draw the AI player's attack scope
+    // if(this.controller === "AI" && hp_percent > 0) this.drawAttackScope(grid);
 
     canvas.push();
     // highlight the current player

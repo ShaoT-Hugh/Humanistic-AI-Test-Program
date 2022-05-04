@@ -283,7 +283,8 @@ class levelButton extends cusButton {
     canvas.push();
     this.drawThumbnail(canvas);
     if(this.ifMouseOn()) {
-      canvas.textSize(18);
+      canvas.textSize(w / 10);
+      canvas.textWrap(WORD);
       if(!this.Clicked) {
         canvas.strokeWeight(1);
         canvas.stroke(220);
@@ -291,7 +292,7 @@ class levelButton extends cusButton {
       canvas.fill(180, 60);
       canvas.rect(x, y, w, h);
       canvas.fill(220);
-      canvas.text(this.level.level_name, x + w/2, y + h/2);
+      canvas.text(this.level.level_name, x, y + h/2, w);
     }
     canvas.pop();
   }
