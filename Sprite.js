@@ -146,6 +146,7 @@ class FloatingText extends Sprite{
       canvas.stroke(255);
     }
     canvas.fill('rgba(' + this.color + ',' + apl + ')');
+    canvas.textFont(assetsManager.get("text_font"));
     canvas.textSize(this.size);
     canvas.textAlign(CENTER);
     canvas.text(this.txt, x, y);
@@ -222,14 +223,23 @@ class cusButton { // (x position, y position, width, height, event listener, but
       if(this.enabled) {
         canvas.stroke(220);
         if(!this.Clicked) {
-          canvas.fill(80);
-          canvas.rect(x, y, w, h);
+          if(this.ifMouseOn()) { // if the cursor is above the button
+            canvas.fill(200);
+            canvas.rect(x - 10, y - 10, w + 20, h + 20);
+            canvas.fill(80);
+            canvas.rect(x, y, w, h);
+            canvas.fill(220);
+            canvas.text(this.text, x + w/2, y + h/2);
+          } else { // normal button
+            canvas.fill(80);
+            canvas.rect(x, y, w, h);
+            canvas.fill(220);
+            canvas.text(this.text, x + w/2, y + h/2);
+          }
+        } else { // if the button is clicked
           canvas.fill(220);
-          canvas.text(this.text, x + w/2, y + h/2);
-        } else {
-          canvas.fill(180);
           canvas.rect(x, y, w, h);
-          canvas.fill(40);
+          canvas.fill(20);
           canvas.text(this.text, x + w/2, y + h/2);
         }
       } else { // if the button is disabled, make it grey
@@ -254,15 +264,15 @@ class levelButton extends cusButton {
     this.autoTrigger = true;
   }
 
-  drawThumbnail(canvas = window) {
-    let x = this.pos_x + 10, y = this.pos_y + 10;
-    let s = (this.width - 2 * 10) / GRID_COL;
+  drawThumbnail(grid, canvas = window) {
+    let s = (this.width - 2 * 10) / max(grid.col, grid.row);
+    let x = this.pos_x + (this.width - grid.col * s) / 2, y = this.pos_y +  + (this.width - grid.row * s) / 2;
     // draw the grid
     canvas.strokeWeight(0.3);
     canvas.stroke(255, 180);
     canvas.fill(120, 80);
-    for(let r = 0; r < GRID_ROW; r++) {
-      for(let c = 0; c < GRID_COL; c++) {
+    for(let r = 0; r < grid.row; r++) {
+      for(let c = 0; c < grid.col; c++) {
         canvas.rect(x + c * s, y + r * s, s);
       }
     }
@@ -281,9 +291,9 @@ class levelButton extends cusButton {
     if(this.Clicked && !mouseIsPressed) this.Clicked = false; // always reset the button clicked state
 
     canvas.push();
-    this.drawThumbnail(canvas);
+    this.drawThumbnail(this.level.grid, canvas);
     if(this.ifMouseOn()) {
-      canvas.textSize(w / 10);
+      canvas.textSize(w / 9);
       canvas.textWrap(WORD);
       if(!this.Clicked) {
         canvas.strokeWeight(1);

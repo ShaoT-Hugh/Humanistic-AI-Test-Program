@@ -1,16 +1,59 @@
 // Visual Settings
+var screenParam = {
+  WINDOW_WIDTH: 2304,
+  WINDOW_HEIGHT: 1082,
+  // canvas parameters
+  SCREEN_WIDTH: 900, SCREEN_HEIGHT: 900,
+  // text parameters
+  LARGE_TEXT: 40, MID_TEXT: 24,
+  // grid parameters (default)
+  GRID_CENTER_X: 450, GRID_CENTER_Y: 390, GRID_SIZE: 54,
+  // button parameters
+  BTN_WIDTH: 150, BTN_HEIGHT: 72, BTN_INTERVAL: 36,
+  LEVEL_BTN_SIZE: 200, LEVEL_BTN_INTERVAL: 40,
+  // player parameters (default)
+  PLAYER_SIZE: 40,
+
+  init: function() { // called when init the page
+    let scale = windowHeight / this.WINDOW_HEIGHT;
+    
+    // update all the size parameters
+    for(let key in this) {
+      if(key !== "resize" && key !== "init") this[key] *= scale;
+    }
+    // update the canvas
+    resizeCanvas(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
+    // update the window size
+    this.WINDOW_WIDTH = windowWidth;
+    this.WINDOW_HEIGHT = windowHeight;
+  },
+
+  resize: function() { // called when the window is resized
+    let scale = windowHeight / this.WINDOW_HEIGHT;
+    
+    // update all the size parameters
+    for(let key in this) {
+      if(key !== "resize" && key !== "init") this[key] *= scale;
+    }
+
+    // update the canvas
+    resizeCanvas(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
+    // update the game board
+    if(gameManager.screenState !== "TITLE") gameManager.board.update();
+    // update the window size
+    this.WINDOW_WIDTH = windowWidth;
+    this.WINDOW_HEIGHT = windowHeight;
+  }
+}
 // canvas parameters
 const SCREEN_WIDTH = 800, SCREEN_HEIGHT = 800;
-const LARGE_TXET = 40, MID_TEXT = 24;
 // grid parameters
 const GRID_ORIGIN_X = 160, GRID_ORIGIN_Y = 100, GRID_SIZE = 48, GRID_ROW = 10, GRID_COL = 10;
 // button parameters
-const BTN_WIDTH = 120, BTN_HEIGHT = 54, BTN_INTERVAL = 16;
+const BTN_WIDTH = 150, BTN_HEIGHT = 72, BTN_INTERVAL = 36;
 const LEVEL_BTN_SIZE = 200, LEVEL_BTN_INTERVAL = 40;
 // camp Colors
-const COLORS = ['#ff3300', '#3366ff', '#ffd11a', '#33cc33'];
-// player parameters
-const PLAYER_SIZE = 36;
+const COLORS = ['#ff3300', '#3366ff', '#e6b800', '#33cc33'];
 
 window.oncontextmenu = function(e) {e.preventDefault();} // disable the browser right-click function
 
@@ -25,8 +68,11 @@ function preload() {
   levelManager = loadJSON("Levels.json");
 
   assetsManager = new Map();
+  // font
+  assetsManager.set("text_font", loadFont("assets/CENTURIES.ttf"));
   // images
-  
+  assetsManager.set("Avatar_player", loadImage("assets/avatar_player.png"));
+  assetsManager.set("Avatar_AI", loadImage("assets/avatar_AI.png"));
   // sound effects
   assetsManager.set("Game_start", loadSound("sounds/start_game.wav"));
   assetsManager.set("Game_end", loadSound("sounds/end_game.wav"));
@@ -40,14 +86,17 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+  let myCanvas = createCanvas(screenParam.SCREEN_WIDTH, screenParam.SCREEN_HEIGHT);
+  myCanvas.parent("main");
+  // set up the parameters
   noStroke();
   textFont('helvetica');
   textAlign(CENTER, CENTER);
 
+  screenParam.init(); // resize the canvas
+
   gameManager = StateManager.get(); // create the game manager
   spriteManager = SpriteManager.get(); // create the sprite manager
-
 }
 
 function draw() {
@@ -61,19 +110,19 @@ function draw() {
     if(gameManager.isRunning) {
       gameManager.updateGame();
     } else if(gameManager.screenState === "AWAIT") {
+      let param = screenParam;
+      gameManager.board.drawMask(); // draw the board mask
       push();
-      fill(20, 160);
-      rect(GRID_ORIGIN_X, GRID_ORIGIN_Y, GRID_COL * GRID_SIZE, GRID_ROW * GRID_SIZE);
       fill(255);
       textStyle(BOLD);
-      textSize(LARGE_TXET);
-      text("GAME OVER", width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2);
+      textSize(screenParam.LARGE_TEXT);
+      text("GAME OVER", width / 2, param.GRID_CENTER_Y);
       if(gameManager.winner !== '') {
-        textSize(MID_TEXT);
-        text("Winner : " + gameManager.winner, width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2 + LARGE_TXET);
+        textSize(screenParam.MID_TEXT);
+        text("Winner : " + gameManager.winner, width / 2, param.GRID_CENTER_Y + screenParam.LARGE_TEXT);
       }
-      textSize(MID_TEXT);
-      text("Press ESC to return", width / 2, GRID_ORIGIN_Y + GRID_SIZE * GRID_ROW / 2 + LARGE_TXET * 3);
+      textSize(screenParam.MID_TEXT);
+      text("Press ESC to return", width / 2, param.GRID_CENTER_Y + screenParam.LARGE_TEXT * 3);
       pop();
     }
   }
@@ -82,8 +131,8 @@ function draw() {
     push();
     fill(255);
     textStyle(BOLD);
-    textSize(LARGE_TXET);
-    text("CHOOSE A LEVEL", width / 2, 50);
+    textSize(screenParam.LARGE_TEXT);
+    text("CHOOSE A LEVEL", width / 2, screenParam.GRID_SIZE);
     pop();
     gameManager.drawLevels(); // show the level buttons
   }
@@ -117,17 +166,38 @@ function keyPressed() {
     }
   }
 }
+// Resize the window
+// function windowResized() {
+//   screenParam.resize();
+// }
 
 class Grid {
-  constructor(x, y, col, row, size) {
-    this.x = x;
-    this.y = y;
+  constructor(x, y, col, row, size, mode = "CORNER") {
+    switch(mode) {
+      case "CORNER":
+        this.x = x;
+        this.y = y;
+        break;
+      case "CENTER":
+        this.x = x - size * col / 2;
+        this.y = y - size * row / 2;
+        break;
+    }
     this.col = col;
     this.row = row;
     this.cellSize = size;
 
-    this.right = x + col * size;
-    this.bottom = y + row * size;
+    this.right = this.x + col * size;
+    this.bottom = this.y + row * size;
+  }
+  update() { // update the grid when the screen is resized
+    let param = screenParam;
+
+    this.cellSize = param.GRID_SIZE;
+    this.x = param.GRID_CENTER_X - this.cellSize * this.col / 2;
+    this.y = param.GRID_CENTER_Y - this.cellSize * this.row / 2;
+    this.right = this.x + this.cellSize * this.col;
+    this.bottom = this.y + this.cellSize * this.row;
   }
   draw(canvas = window) {
     let x = this.x, y = this.y, s = this.cellSize;
@@ -135,7 +205,7 @@ class Grid {
     canvas.stroke(220, 160);
     canvas.strokeWeight(6);
     canvas.noFill();
-    canvas.rect(x, y, this.col * s, this.row *s);
+    canvas.rect(x, y, this.col * s, this.row * s);
     canvas.strokeWeight(2);
     canvas.fill(120, 120);
     for(let r = 0; r < this.row; r++) {
@@ -143,6 +213,12 @@ class Grid {
         canvas.rect(x + c * s, y + r * s, s);
       }
     }
+    canvas.pop();
+  }
+  drawMask(canvas = window) {
+    canvas.push();
+    canvas.fill(20, 160);
+    canvas.rect(this.x, this.y, this.cellSize * this.col, this.cellSize * this.row);
     canvas.pop();
   }
 }

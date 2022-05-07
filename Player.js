@@ -6,16 +6,16 @@ class Player {
     this.camp = camp;
     switch(camp) {
       case 'red':
-        this.color = '#ff3300';
+        this.color = COLORS[0];
         break;
       case 'blue':
-        this.color = '#3366ff';
+        this.color = COLORS[1];
         break;
       case 'yellow':
-        this.color = '#ffd11a';
+        this.color = COLORS[2];
         break;
       case 'green':
-        this.color = '#33cc33';
+        this.color = COLORS[3];
         break;
     }
     this.maxhp = hp;
@@ -55,23 +55,23 @@ class Player {
         });
         ifReady = true;
         break;
-      case 'RECOVER':
-        if(this.hp < this.maxhp - this.recovery) this.hp += this.recovery;
-        else this.hp = this.maxhp;
-        // show the healing number
-        spriteManager.createSprite("floating_text", {
-          x: this.getAbsPos(gameManager.board)[0],
-          y: this.getAbsPos(gameManager.board)[1],
-          txt: '+' + this.recovery,
-          color: '80, 220, 80'
-        });
-        assetsManager.get("Recover").play(); // play the recovery sound
+      case 'REST': // rest and restore health
+        if(this.hp < this.maxhp) { // only restore health when hp is not full
+          if(this.hp < this.maxhp - this.recovery) this.hp += this.recovery;
+          else this.hp = this.maxhp;
+          // show the healing number
+          spriteManager.createSprite("floating_text", {
+            x: this.getAbsPos(gameManager.board)[0],
+            y: this.getAbsPos(gameManager.board)[1],
+            txt: '+' + this.recovery,
+            color: '80, 220, 80'
+          });
+          assetsManager.get("Recover").play(); // play the recovery sound
+        }
         ifReady = true;
         break;
-      default: // skip the turn
-        ifReady = true;
     }
-    if(ifReady) myCommands.push(cmd);
+    // if(ifReady) myCommands.push(cmd); // push the command to local command strings
     return ifReady;
   }
 
@@ -122,10 +122,17 @@ class Player {
     }
     return false;
   }
-  checkPosInMovement(cell) { // check if a position is within my movement range
+  checkPosInMovement(pos) { // check if a position is within my movement range
     let scope = this.getMovementScope();
     for(let p of scope) {
-      if(cell[0] == p[0] && cell[1] === p[1]) return true;
+      if(pos[0] == p[0] && pos[1] == p[1]) return true;
+    }
+    return false;
+  }
+  checkPosInRange(pos) { // check if a position is within my attack range
+    let range = this.getAttackScope();
+    for(let cell of range) {
+      if(pos[0] == cell[0] && pos[1] == cell[1]) return true;
     }
     return false;
   }
@@ -152,7 +159,7 @@ class Player {
     let scope = this.getMovementScope(); 
     for(let cell of scope) {
       let cell_x = grid.x + grid.cellSize * cell[0], cell_y = grid.y + grid.cellSize * cell[1];
-      canvas.rect(cell_x, cell_y, GRID_SIZE);
+      canvas.rect(cell_x, cell_y, screenParam.GRID_SIZE);
     }
     canvas.pop();
   }
@@ -164,7 +171,7 @@ class Player {
     let scope = this.getAttackScope();
     for(let cell of scope) {
       let cell_x = grid.x + grid.cellSize * cell[0], cell_y = grid.y + grid.cellSize * cell[1];
-      canvas.rect(cell_x, cell_y, GRID_SIZE);
+      canvas.rect(cell_x, cell_y, screenParam.GRID_SIZE);
     }
     canvas.pop();
   }
@@ -172,19 +179,20 @@ class Player {
     canvas.push();
     let cell_x = grid.x + grid.cellSize * this.x, cell_y = grid.y + grid.cellSize * this.y;
     canvas.fill(20, 220, 20, 120);
-    canvas.rect(cell_x, cell_y, GRID_SIZE);
+    canvas.rect(cell_x, cell_y, screenParam.GRID_SIZE);
     canvas.pop();
   }
   drawInfoPanel(grid, canvas = window) { // show the player's info panel
     let x = this.getAbsPos(grid)[0],  y = this.getAbsPos(grid)[1];
     canvas.push();
-    canvas.translate(x + PLAYER_SIZE, y);
+    canvas.translate(x + screenParam.PLAYER_SIZE, y);
     canvas.stroke(220);
-    canvas.fill(80, 180);
+    canvas.fill(80, 200);
     canvas.rect(0, 0, 120, 80);
     // draw the texts
     canvas.noStroke();
     canvas.textAlign(LEFT);
+    canvas.textFont(assetsManager.get("text_font"));
     canvas.fill(220);
     canvas.textSize(16);
     canvas.text("HP : " + this.hp + ' / ' + this.maxhp, 10, 20);
@@ -195,29 +203,62 @@ class Player {
   draw(turn, grid, canvas = window) {
     let x = this.getAbsPos(grid)[0],  y = this.getAbsPos(grid)[1];
     let hp_percent = this.hp / this.maxhp;
+    // floating effect
+    
     // draw the AI player's attack scope
     // if(this.controller === "AI" && hp_percent > 0) this.drawAttackScope(grid);
 
     canvas.push();
+    canvas.imageMode(CENTER);
     // highlight the current player
     if(turn === this.id) {
       canvas.fill(255, 120);
-      canvas.ellipse(x, y, PLAYER_SIZE + 25);
+      canvas.ellipse(x, y, screenParam.PLAYER_SIZE + 25);
     }
     // draw the player's avatar
+    // y -= screenParam.PLAYER_SIZE / 2;
+    // let size = screenParam.PLAYER_SIZE * 1.2;
+    // if(this.hp > 0) {
+    //   canvas.fill(this.color);
+    //   drawSector(x, y - size * 0.2, screenParam.PLAYER_SIZE, hp_percent, canvas);
+    //   canvas.image(assetsManager.get("Avatar_player"), x, y, size, size * 1.3);
+    // } else {
+    //   drawSector(x, y, screenParam.PLAYER_SIZE, hp_percent, canvas);
+    //   canvas.fill(20, 60);
+    // }
     if(this.hp > 0) canvas.fill(this.color);
-    else canvas.fill(20, 80);
-    canvas.ellipse(x, y, PLAYER_SIZE);
+    else canvas.fill(20, 60);
+    canvas.stroke(255);
+    if(this.controller !== "player") polygon(x, y, screenParam.PLAYER_SIZE / 2, 6);
+    else canvas.ellipse(x, y, screenParam.PLAYER_SIZE);
     // draw health bar
     // canvas.noFill();
     // canvas.stroke(0);
-    // canvas.rect(x - PLAYER_SIZE/2 - 10, y - PLAYER_SIZE/2 - 20, (PLAYER_SIZE + 20) * hp_percent, 12);
+    // canvas.rect(x - screenParam.PLAYER_SIZE/2 - 10, y - screenParam.PLAYER_SIZE/2 - 20, (screenParam.PLAYER_SIZE + 20) * hp_percent, 12);
 
     // show the player's health
-    canvas.fill(255);
-    canvas.textSize(PLAYER_SIZE / 2);
+    if(this.hp > 0) canvas.fill(255);
+    else canvas.fill(255, 80);
+    canvas.textFont(assetsManager.get("text_font"));
+    canvas.textSize(screenParam.PLAYER_SIZE / 2);
     canvas.textAlign(CENTER, CENTER);
-    canvas.text(this.hp >= 0 ? this.hp : 0, x, y);
+    canvas.text(this.hp >= 0 ? this.hp : 0, x, y - 2);
     canvas.pop();
   }
+}
+
+function drawSector(x, y, dia, percent, canvas = window) {
+  let start = -PI / 2 + PI * (1 - percent);
+  let stop = PI * 3 / 2 - PI * (1 - percent);
+  canvas.arc(x, y, dia, dia, start, stop, CHORD);
+}
+function polygon(x, y, radius, npoints) {
+  let angle = TWO_PI / npoints;
+  beginShape();
+  for (let a = 0; a < TWO_PI; a += angle) {
+    let sx = x + cos(a) * radius;
+    let sy = y + sin(a) * radius;
+    vertex(sx, sy);
+  }
+  endShape(CLOSE);
 }

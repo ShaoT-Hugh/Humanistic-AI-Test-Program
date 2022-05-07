@@ -2,6 +2,7 @@
   null,
   {
     "level_name": "Tutorial",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 2, "range": 2},
       {"id": 1, "x": 7, "y": 7, "camp": "blue", "control": "Null", "hp": 100, "dmg": 20, "float": 10, "movement": 2, "range": 2}
@@ -10,6 +11,7 @@
   null,
   {
     "level_name": "One on One",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 3},
       {"id": 1, "x": 7, "y": 7, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 3}
@@ -17,6 +19,7 @@
   },
   {
     "level_name": "Seige",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 1, "y": 1, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 3, "range": 2},
       {"id": 1, "x": 3, "y": 3, "camp": "yellow", "control": "AI", "hp": 60, "dmg": 15, "float": 5, "movement": 2, "range": 2},
@@ -26,6 +29,7 @@
   },
   {
     "level_name": "Play 3 off",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 1, "y": 1, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 2, "range": 3},
       {"id": 1, "x": 5, "y": 5, "camp": "blue", "control": "AI", "hp": 70, "dmg": 15, "float": 10, "movement": 2, "range": 2},
@@ -35,6 +39,7 @@
   },
   {
     "level_name": "One on One (Asymmetric)",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 120, "dmg": 25, "float": 15, "movement": 2, "range": 2},
       {"id": 1, "x": 7, "y": 7, "camp": "green", "control": "AI", "hp": 60, "dmg": 15, "float": 10, "movement": 3, "range": 3}
@@ -42,15 +47,17 @@
   },
   {
     "level_name": "Deux Dual",
+    "grid": {"row": 8, "col": 14},
     "players": [
-      {"id": 0, "x": 2, "y": 2, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
-      {"id": 1, "x": 7, "y": 2, "camp": "red", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
-      {"id": 2, "x": 2, "y": 7, "camp": "blue", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
-      {"id": 3, "x": 7, "y": 7, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 2}
+      {"id": 0, "x": 3, "y": 1, "camp": "red", "control": "player", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
+      {"id": 1, "x": 10, "y": 1, "camp": "red", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 2, "x": 3, "y": 6, "camp": "blue", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},
+      {"id": 3, "x": 10, "y": 6, "camp": "blue", "control": "AI", "hp": 100, "dmg": 20, "float": 15, "movement": 3, "range": 2}
     ]
   },
   {
     "level_name": "Melee",
+    "grid": {"row": 10, "col": 10},
     "players": [
       {"id": 0, "x": 3, "y": 1, "camp": "red", "control": "AI", "hp": 100, "dmg": 20, "float": 10, "movement": 3, "range": 2},
       {"id": 1, "x": 6, "y": 1, "camp": "blue", "control": "AI", "hp": 60, "dmg": 20, "float": 15, "movement": 2, "range": 3},

@@ -64,7 +64,7 @@ class AI {
     if(this.tree.execute()) {
       // console.log(this.command);
       return this.command; // send out the final command in the end
-    } else return {command: "SKIP"}
+    } else return {command: "REST"}
   }
 }
 
@@ -269,7 +269,7 @@ const BehaviorNodes = {
     let final_res = 0;
     for(let res of evaluation) final_res += res;
     if(my.hp >= my.maxhp - my.recovery || final_res >= 0) {
-      let largestDis = (GRID_COL - 1) + (GRID_ROW - 1);
+      let largestDis = (gameManager.board.col - 1) + (gameManager.board.row - 1);
       let highest_score = -100; // record the best score
       // loop field score array and update score of each position
       for(let posInfo of fieldEva) {
@@ -306,7 +306,7 @@ const BehaviorNodes = {
     let enemies = Auxiliary.getEnemies(my); // get all the enemies
     // let evaluation = Auxiliary.allEnemyEvaluate(my); // make an enemy evaluation
 
-    let largestDis = (GRID_COL - 1) + (GRID_ROW - 1);
+    let largestDis = (gameManager.board.col - 1) + (gameManager.board.row - 1);
     let highest_score = -100; // record the best score
     // loop field score array and update score of each position
     for(let posInfo of fieldEva) {
@@ -343,7 +343,7 @@ const BehaviorNodes = {
   //   let enemies = Auxiliary.getEnemies(my); // get all the enemies
   //   // let evaluation = Auxiliary.allEnemyEvaluate(my); // make an enemy evaluation
 
-  //   let largestDis = sqrt(sq(GRID_SIZE * (GRID_COL - 1)) + sq(GRID_SIZE * (GRID_ROW - 1)));
+  //   let largestDis = sqrt(sq(screenParam.GRID_SIZE * (GRID_COL - 1)) + sq(screenParam.GRID_SIZE * (screenParam.GRID_ROW - 1)));
   //   let highest_score = -100, best_pos = [];
   //   // loop field score array and update score of each position
   //   for(let posInfo of fieldEva) {
@@ -368,10 +368,8 @@ const BehaviorNodes = {
   // },
 
   recover: function(my) {
-    if(my.hp < my.maxhp) {
-      my.ai.command = {command: "RECOVER"};
-      return true;
-    } else return false;
+    my.ai.command = {command: "REST"};
+    return true;
   }
 }
 

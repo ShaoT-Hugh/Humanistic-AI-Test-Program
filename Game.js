@@ -8,22 +8,25 @@ class StateManager {
     // AWAIT: Waiting for the player to choose a command
     // COMMAND: Waiting for the player to choose a target
     this.screenState = "TITLE";
-    this.cur_command = "";
+    this.cur_command = "MOVE"; // MOVE is the default command
 
     this.round = 0;
     this.turn = 0; // whose turn it is now
     this.winner = "";
 
-    this.board = new Grid(GRID_ORIGIN_X, GRID_ORIGIN_Y, GRID_COL, GRID_ROW, GRID_SIZE);
+    this.board = {};
+    this.instruction = "";
+
+    let param = screenParam;
     // Level Buttons
     this.levels = [];
-    let left_edge = (width - LEVEL_BTN_SIZE * 3 - LEVEL_BTN_INTERVAL * 2) / 2;
+    let left_edge = (width - param.LEVEL_BTN_SIZE * 3 - param.LEVEL_BTN_INTERVAL * 2) / 2;
     for(let lv in levelManager)
       if(levelManager[lv] !== null)
         this.levels.push(new levelButton({
-          x: left_edge + (parseInt(lv) % 3) * (LEVEL_BTN_SIZE + LEVEL_BTN_INTERVAL),
-          y: GRID_ORIGIN_Y + floor(parseInt(lv) / 3) * (LEVEL_BTN_SIZE + LEVEL_BTN_INTERVAL),
-          w: LEVEL_BTN_SIZE, h: LEVEL_BTN_SIZE,
+          x: left_edge + (parseInt(lv) % 3) * (param.LEVEL_BTN_SIZE + param.LEVEL_BTN_INTERVAL),
+          y: param.GRID_CENTER_Y - param.GRID_SIZE * 5 + floor(parseInt(lv) / 3) * (param.LEVEL_BTN_SIZE + param.LEVEL_BTN_INTERVAL),
+          w: param.LEVEL_BTN_SIZE, h: param.LEVEL_BTN_SIZE,
           levelData: levelManager[lv],
           func: function() {
             gameManager.startGame(levelManager[lv]);
@@ -31,28 +34,29 @@ class StateManager {
           }
         }));
       
-    // HUM Buttons
+    // HUM Buttons (ATTACK & REST)
     this.buttons = [];
-    let commands_texts = ["MOVE", "ATTACK", "RECOVER"];
-    let originX = (width - BTN_WIDTH * 4 - BTN_INTERVAL * 3) / 2, originY = GRID_ORIGIN_Y + GRID_ROW * GRID_SIZE;
-    for(let i = 0; i < commands_texts.length; i++) {
-      this.buttons.push(new cusButton({
-        x: originX + i * (BTN_WIDTH + BTN_INTERVAL), y: originY + BTN_HEIGHT, width: BTN_WIDTH, height: BTN_HEIGHT,
-        text: commands_texts[i],
-        func: function() {
-          gameManager.cur_command = commands_texts[i];
-          gameManager.switchState("COMMAND");
-        }
-      }));
-    }
+    let originX = (width - param.BTN_WIDTH * 2 - param.BTN_INTERVAL) / 2;
+    let originY = param.GRID_CENTER_Y + 10 * param.GRID_SIZE / 2;
     this.buttons.push(new cusButton({
-      x: originX + 3 * (BTN_WIDTH + BTN_INTERVAL), y: originY + BTN_HEIGHT, width: BTN_WIDTH, height: BTN_HEIGHT,
-      text: "SKIP",
+      x: originX, y: originY + param.BTN_HEIGHT, width: param.BTN_WIDTH, height: param.BTN_HEIGHT,
+      text: "ATTACK",
       func: function() {
-        gameManager.cur_command = "SKIP";
+        gameManager.cur_command = "ATTACK";
+        gameManager.switchState("COMMAND");
+      },
+      text_size: param.BTN_HEIGHT / 3
+    }));
+    
+    this.buttons.push(new cusButton({
+      x: originX + (param.BTN_WIDTH + param.BTN_INTERVAL), y: originY + param.BTN_HEIGHT, width: param.BTN_WIDTH, height: param.BTN_HEIGHT,
+      text: "REST",
+      func: function() {
+        gameManager.cur_command = "REST";
         gameManager.switchState("COMMAND");
         gameManager.sendCommand();
-      }
+      },
+      text_size: param.BTN_HEIGHT / 3
     }));
 
     this.playerList = []; // all the player objects
@@ -62,6 +66,14 @@ class StateManager {
   }
   triggerButtons() { // attempt to trigger all the buttons
     for(let btn of this.buttons) if(btn.enabled) btn.ifClicked();
+    if(this.cur_command === "MOVE" && this.playerList[this.turn].controller === "player") { // if the command is MOVE
+      this.sendCommand(); // if no command button is pressed, send MOVE as default command
+    }
+  }
+  resetButtons() { // reset the position of the buttons
+    for(let btn of this.buttons) {
+      btn.pos_y = screenParam.GRID_CENTER_Y + this.board.row * this.board.cellSize / 2 + screenParam.BTN_HEIGHT;
+    }
   }
   enableLevels(enable = true) { // enable all the level buttons
     for(let btn of this.levels) btn.enable(enable);
@@ -69,12 +81,21 @@ class StateManager {
 
   startGame(level = {}) {
     this.playerList = []; // clear all the players
+    this.cur_command = "MOVE"; // reset command string
     this.winner = ""; // reset winner
-
-    // read level data and create new players
+    
+    // read level data
+    // create new grid/map
+    this.board = new Grid(
+      screenParam.GRID_CENTER_X, screenParam.GRID_CENTER_Y,
+      level.grid.col, level.grid.row,
+      screenParam.GRID_SIZE, "CENTER"
+    );
+    // create new players
     for(let p of level.players) this.playerList.push(new Player(p));
 
     this.switchState("AWAIT");
+    this.resetButtons(); // reset button positions
     this.enableButtons(true); // enable all the buttons
     this.isRunning = true; // start the game
     assetsManager.get("Game_start").play(); // play the start sound
@@ -88,6 +109,7 @@ class StateManager {
       case "AWAIT":
         this.screenState = "AWAIT";
         this.enableButtons(true); // enable the buttons
+        this.cur_command = "MOVE"; // reset command string
         break;
       case "COMMAND":
         this.screenState = "COMMAND";
@@ -95,33 +117,25 @@ class StateManager {
         break;
       case "TITLE":
         this.screenState = "TITLE";
+        this.board = {}; // clear the board
         this.enableButtons(false); // disable the buttons
         this.enableLevels(true); // enable the level buttons
         break;
     }
   }
   updateGame() { // update game state
-    this.showPlayerInfo();
-
     // check the game state
     if(this.screenState === "AWAIT") {
-      // this.showPlayerInfo();
-    } else if(this.screenState === "COMMAND") {
-      switch(this.cur_command) { // draw the available command scope
-        case "MOVE":
-          this.playerList[this.turn].drawMovementScope(this.board);
-          break;
-        case "ATTACK":
-          this.playerList[this.turn].drawAttackScope(this.board);
-          break;
-        case "RECOVER":
-          this.playerList[this.turn].drawHealScope(this.board);
-          break;
-      }
+      this.playerList[this.turn].drawMovementScope(this.board); // draw the movement scope
+    } else if(this.screenState === "COMMAND" && this.cur_command === "ATTACK") {
+      this.playerList[this.turn].drawAttackScope(this.board); // draw the attack range
     }
+    this.showPlayerInfo();
+
     this.highlightCursor(); // show the highlight cursor
 
     this.drawButtons(); // always show the buttons
+    // show instruction texts
   }
   endGame() {
     this.round = 0;
@@ -136,7 +150,7 @@ class StateManager {
   sendCommand() { // execute the current command to see if the command is executable
     let ifReady = false;
     let targt_pos = this.getCursor(), target;
-    if(targt_pos || this.cur_command === "SKIP") { // target must be a valid cell of the game board
+    if(targt_pos || this.cur_command === "REST") { // target must be a valid cell of the game board
       let targt_player = this.checkPosition(targt_pos[0], targt_pos[1]);
       let cur_player = this.playerList[this.turn];
       let abs_pos = this.getAbsPos(targt_pos, this.board);
@@ -146,6 +160,7 @@ class StateManager {
           if(!targt_player && cur_player.checkPosInMovement(targt_pos)) {
             target = targt_pos;
             ifReady = true;
+            this.switchState("COMMAND"); // switch to command state to disable the buttons
           } else {
             spriteManager.createSprite("floating_text", {
               x: abs_pos[0],
@@ -154,6 +169,7 @@ class StateManager {
               color: '220, 220, 220'
             });
             assetsManager.get("Invalid_target").play();
+            this.switchState("AWAIT"); // return to AWAIT state
           }
           break;
         case "ATTACK": // target must be an enemy && within the player's attack range
@@ -170,22 +186,12 @@ class StateManager {
             assetsManager.get("Invalid_target").play();
           }
           break;
-        case "RECOVER": // target must be the player themself
-          if(targt_player.id === cur_player.id) {
-            target = cur_player;
-            ifReady = true;
-          } else {
-            spriteManager.createSprite("floating_text", {
-              x: abs_pos[0],
-              y: abs_pos[1],
-              txt: "Invalid Target!",
-              color: '220, 220, 220'
-            });
-            assetsManager.get("Invalid_target").play();
-          }
+        case "REST": // no target; restore health and end the turn
+          target = null;
+          ifReady = true;
           break;
         default:
-          target = null; // skip the round
+          target = null; // default command: REST
           ifReady = true;
       }
     }
@@ -204,6 +210,7 @@ class StateManager {
     } else {
       ifReady = true;
     }
+    clearTimeout(waitTimer);
     // console.log(this.turn);
     if(ifReady) { // if the current player has moved successfully, go to the next round
       // check if the game is over
@@ -219,13 +226,13 @@ class StateManager {
         this.turn = (this.turn + 1) % this.playerList.length;
         this.round += 1;
         let next_player = this.playerList[this.turn];
+        this.cur_command = "MOVE"; // reset command string
         // check if the next player is controlled by AI
         if(next_player.controller === 'AI' || next_player.controller === 'Null') {
           this.enableButtons(false);
           waitTimer = setTimeout(function() {
             gameManager.nextRound();
-            // clearTimeout(waitTimer);
-          }, 750);
+          }, 1500);
         } else if(next_player.hp <= 0) this.nextRound();
         else this.switchState("AWAIT");
       }  
@@ -252,9 +259,18 @@ class StateManager {
     if(cell) {
       // draw the highlighted block
       let cellX = grid.x + cell[0] * grid.cellSize, cellY = grid.y + cell[1] * grid.cellSize;
+      let cur_player = this.playerList[this.turn];
       push();
-      noStroke();
-      fill(20, 20, 120, 128);
+      if(((this.cur_command === "MOVE" && cur_player.checkPosInMovement(cell)) || 
+      (this.cur_command === "ATTACK" && cur_player.checkPosInRange(cell))) &&
+      cur_player.controller === "player") {
+        strokeWeight(6);
+        stroke(20, 80, 20);
+        fill(20, 120, 20, 128);
+      } else { // stress the cursor if the cell is a valid target in command mode
+        noStroke();
+        fill(120, 20, 20, 128);
+      }
       rect(cellX, cellY, this.board.cellSize);
       pop();
     }
@@ -282,12 +298,13 @@ class StateManager {
       p.draw(this.turn, this.board);
     }
     // tell the player who's turn it is now
-    let txt_x = width / 2, txt_y = 40;
+    let txt_x = width / 2, txt_y = screenParam.GRID_SIZE;
     canvas.push();
     canvas.fill(255);
-    canvas.textSize(MID_TEXT);
+    canvas.textStyle(BOLD);
+    canvas.textSize(screenParam.LARGE_TEXT);
     if(this.playerList[this.turn].controller === 'player') canvas.text("YOUR TURN", txt_x, txt_y);
-    else canvas.text("ENEMY'S TURN", txt_x, txt_y);
+    else canvas.text("AI PLAYER'S TURN", txt_x, txt_y);
     canvas.pop();
   }
   drawButtons(canvas = window) {

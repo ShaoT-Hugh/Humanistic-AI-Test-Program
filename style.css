@@ -1,17 +1,25 @@
 html {
   height: 100%;
 }
+
 body {
   background-color: black;
 
   margin: 0;
-  padding: 2em;
   display: flex;
+  align-items: center;
+}
 
-  /* This centers our sketch horizontally. */
-  justify-content: center;
+.left {
+  width: 50%;
+  height: 80vh;
+}
+.right {
+  width: 50%;
+  height: 100vh;
 
-  /* This centers our sketch vertically. */
+  display: flex;
+  /* justify-content: center; */
   align-items: center;
 }
 
@@ -20,15 +28,21 @@ canvas {
 }
 
 p {
-  font-size: 12pt;
+  font-size: 18pt;
   font-family: Helvetica, Arial, sans-serif;
-  line-height: 20pt;
-  margin-bottom: 2em;
+  line-height: 24pt;
+  margin-bottom: 1em;
   text-align: center;
   color: white;
 }
-
 #stress {
-  font-size: 18pt;
-  line-height: 3em;
+  font-size: 22pt;
+  line-height: 1em;
+}
+
+img {
+  height: 75%;
+
+  display: block;
+  margin: 1em auto;
 }
