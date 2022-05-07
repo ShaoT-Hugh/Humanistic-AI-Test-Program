@@ -28,19 +28,20 @@ canvas {
 }
 
 p {
-  font-size: 18pt;
+  font-size: 2vh;
   font-family: Helvetica, Arial, sans-serif;
-  line-height: 24pt;
+  line-height: 2.7vh;
   margin-bottom: 1em;
   text-align: center;
   color: white;
 }
 #stress {
-  font-size: 22pt;
+  font-size: 2.6vh;
   line-height: 1em;
 }
 
 img {
+  max-width: 99%;
   height: 75%;
 
   display: block;

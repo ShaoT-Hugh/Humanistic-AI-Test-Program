@@ -125,10 +125,11 @@ class StateManager {
   }
   updateGame() { // update game state
     // check the game state
+    let cur_player = this.playerList[this.turn];
     if(this.screenState === "AWAIT") {
-      this.playerList[this.turn].drawMovementScope(this.board); // draw the movement scope
+      if(cur_player.hp > 0) cur_player.drawMovementScope(this.board); // draw the movement scope
     } else if(this.screenState === "COMMAND" && this.cur_command === "ATTACK") {
-      this.playerList[this.turn].drawAttackScope(this.board); // draw the attack range
+      cur_player.drawAttackScope(this.board); // draw the attack range
     }
     this.showPlayerInfo();
 

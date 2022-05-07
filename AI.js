@@ -10,28 +10,38 @@ class AI {
     this.mode = mode || "NORMAL";
 
     this.command = {};
+    this.courage_lvl = 0;
     this.tree = new Selector(
       "Selector_0", 0,
       [
-        new Sequence(
-          "Sequence_1", 1,
+        new Selector(
+          "Selector_1-1", 1,
           [
             new Behavior(
-              "If I'm not going to die", 2,
-              BehaviorNodes.ifMyNotDying, this.player
+              "If I can execute the enemy", 2,
+              BehaviorNodes.ifExecution, this.player
             ),
-            new Behavior(
-              "If there is any enemy within my range?", 2,
-              BehaviorNodes.ifEnemyInRange, this.player
-            ),
-            new Behavior(
-              "Select Target", 2,
-              BehaviorNodes.selectTarget, this.player
+            new Sequence(
+              "Sequence_1", 2,
+              [
+                new Behavior(
+                  "If I'm not going to die", 3,
+                  BehaviorNodes.ifMyNotDying, this.player
+                ),
+                new Behavior(
+                  "If there is any enemy within my range?", 3,
+                  BehaviorNodes.ifEnemyInRange, this.player
+                ),
+                new Behavior(
+                  "Select Target", 3,
+                  BehaviorNodes.selectTarget, this.player
+                )
+              ]
             )
           ]
         ),
         new Selector(
-          "Selector_1", 1,
+          "Selector_2", 1,
           [
             new Sequence(
               "Sequence_2-1", 2,
@@ -52,10 +62,19 @@ class AI {
             )
           ]
         ),
-        new Behavior(
-          "Recover", 1,
-          BehaviorNodes.recover, this.player
-        ),
+        new Selector(
+          "Selector_3", 1,
+          [
+            new Behavior(
+              "LastAttack", 2,
+              BehaviorNodes.lastAttack, this.player
+            ),
+            new Behavior(
+              "Recover", 2,
+              BehaviorNodes.recover, this.player
+            )
+          ]
+        )
       ]
     );
   }
@@ -137,7 +156,7 @@ const Auxiliary = { // auxiliary functions used to analyze game data
     }
     return enemies;
   },
-  getFriend: function(my) { // return all my friends
+  getFriends: function(my) { // return all my friends
     let friends = [], playerList = this.getPlayerList();
     for(let p of playerList) {
       if(p.id !== my.id && p.camp == my.camp && p.hp > 0) friends.push(p);
@@ -188,7 +207,7 @@ const Auxiliary = { // auxiliary functions used to analyze game data
       else if(losthp >= maxhp / 2 || hp <= maxhp * 0.3) return 2; // vulnerable: the player may lose too much hp
       else if(hp <= maxhp * 0.6) return 4; // not well
       else if(hp > maxhp * 0.6 && losthp > 0) return 6; // healthy
-    } else return 10; // no enemy nearby the player
+    } else return 10; // safe: no enemy nearby the player
 
     // 0-Dying: Probably being killed before next action
     // 1-Agonal: Probably being killed after next action
@@ -202,7 +221,7 @@ const Auxiliary = { // auxiliary functions used to analyze game data
     let myState = this.riskEvaluate(my);
     // evaluate every enemy
     for(let e of enemies) { // {res} is decided by the overall feeling and the actual health difference
-      let res = myState - this.riskEvaluate(e) + this.healthEvaluate(my, e) + 1 + this.getFriend(my).length;
+      let res = myState - this.riskEvaluate(e) + this.healthEvaluate(my, e) + 1 + this.getFriends(my).length * 2;
       // console.log(myState + ',' + this.riskEvaluate(e) + ',' + this.healthEvaluate(my, e));
       comparision.push(res);
     }
@@ -226,6 +245,21 @@ const Auxiliary = { // auxiliary functions used to analyze game data
 
 // all behaviors (behavior nodes only return true(executable) or false(inexecutable))
 const BehaviorNodes = {
+  ifExecution: function(my) { // check if there is only one enemy nearby and can I kill it in the next round
+    let enemyInRange = Auxiliary.getEnemiesInRange(my); // get all the enemies in my range
+    let enemyThreatenMe = Auxiliary.getEnemiesThreatenMy(my); // get all the enemies that threaten me
+    if(enemyInRange.length > 0) {
+      for(let e of enemyInRange) {
+        // check if there is only one enemy threatening me
+        if(e.hp <= my.damage + my.damage_dice / 2 && enemyThreatenMe.length === 1 && enemyThreatenMe[0] === e) {
+          my.ai.command = {command: "ATTACK", target: e}; // launch an attack
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+
   ifMyNotDying: function(my) { // check if I'm not going to die
     if(Auxiliary.riskEvaluate(my) > 0) return true;
     else return false;
@@ -235,20 +269,14 @@ const BehaviorNodes = {
     if(enemyList.length > 0) return true;
     else return false;
   },
-  // ifMyNotInRange: function(my) { // check if I'm not in any enemy's attack range
-  //   let enemyList = Auxiliary.getEnemiesThreatenMy(my);
-  //   if(enemyList.length > 0) return !true;
-  //   return !false;
-  // },
   selectTarget: function(my) { // choose a target to attack (content return)
     let enemies = Auxiliary.getEnemiesInRange(my);
     let evaluation = Auxiliary.nearbyEnemyEvaluate(my);
     // calculate the expectation of each target
     let exp = 0;
-    for(let res of evaluation) exp += res * (res < 0 ? 0.4 : 0.8);
-    // console.log(exp);
+    for(let res of evaluation) exp += res * (res < 0 ? random(0.2, 0.4) : random(0.8, 1));
     // decide if attack
-    if(exp >= -2) {
+    if(exp >= -0.2) { // attack if I'm in dominant place
       // choose the most vulnerable target
       let target = enemies[evaluation.indexOf(max(evaluation))];
       my.ai.command = {command: "ATTACK", target: target}; // return the exact command
@@ -304,6 +332,7 @@ const BehaviorNodes = {
   selectMovement_escape: function(my) { // select the best position to move (escape)
     let fieldEva = Auxiliary.battleFieldAnalyze(my); // make a field evaluaion
     let enemies = Auxiliary.getEnemies(my); // get all the enemies
+    let friends = Auxiliary.getFriends(my); // get all the allies
     // let evaluation = Auxiliary.allEnemyEvaluate(my); // make an enemy evaluation
 
     let largestDis = (gameManager.board.col - 1) + (gameManager.board.row - 1);
@@ -323,6 +352,11 @@ const BehaviorNodes = {
         // if the enemy is not that strong, then the nearer the better
         target_score += res < -5 ? (res - 0.01) * dist_score : (res + 5) * dist_score;
       }
+      if(friends.length > 0)
+        for(let f of friends) { // always the closer to your allies, the better
+          let dist_score = map(Auxiliary.distanceAbs(my, f), 0, largestDis, 1, 0);
+          target_score += dist_score;
+        }
       posInfo.score += target_score;
       
       // update the highest score
@@ -367,6 +401,15 @@ const BehaviorNodes = {
   //   } else return false;
   // },
 
+  lastAttack: function(my) {
+    let myState = Auxiliary.riskEvaluate(my);
+    let enemyInRange = Auxiliary.getEnemiesInRange(my);
+    if(myState <= 0 && enemyInRange.length > 0) {
+      my.ai.command = {command: "ATTACK", target: enemyInRange[0]}; // launch the last attck
+      return true;
+    }
+    return false;
+  },
   recover: function(my) {
     my.ai.command = {command: "REST"};
     return true;
