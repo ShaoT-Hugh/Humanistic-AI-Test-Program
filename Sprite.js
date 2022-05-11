@@ -127,8 +127,8 @@ class Flyingball {
   
 // floating text
 class FloatingText extends Sprite{
-  constructor({x, y, txt, size = 22, color = '255, 255, 255', stroke = 0} = {}){
-    super({x: x, y: y, tx: x, ty: y - 30});
+  constructor({x, y, txt, size = 24, color = '255, 255, 255', stroke = 0} = {}){
+    super({x: x, y: y, tx: x, ty: y - 40, rate: 40});
     this.txt = txt; // content of the text
     this.size = size ; // size of the text
     this.color = color; // color of the text(string)

@@ -25,12 +25,12 @@ class AI {
               "Sequence_1", 2,
               [
                 new Behavior(
-                  "If I'm not going to die", 3,
-                  BehaviorNodes.ifMyNotDying, this.player
-                ),
-                new Behavior(
                   "If there is any enemy within my range?", 3,
                   BehaviorNodes.ifEnemyInRange, this.player
+                ),
+                new Behavior(
+                  "If I'm not going to die", 3,
+                  BehaviorNodes.ifMyNotDying, this.player
                 ),
                 new Behavior(
                   "Select Target", 3,
